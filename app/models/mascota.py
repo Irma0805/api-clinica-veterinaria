@@ -2,6 +2,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String, Date, ForeignKey
 from app.database.db_connection import Base
 
+
 class Mascota(Base):
     __tablename__ = 'mascotas'
 

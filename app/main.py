@@ -1,27 +1,26 @@
 from fastapi import FastAPI
-from app.config.settings import settings
-from app.database.db_connection import engine, Base
-from contextlib import asynccontextmanager
-from sqlalchemy import text
+from app.database.db_connection import Base, engine
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    Base.metadata.create_all(bind=engine)
-    yield
+
+from app.routers import mascota as mascota_router
+from app.routers import propietario as propietario_router  # 👈 NUEVO
+
+from app.models.propietario import Propietario
+from app.models.mascota import Mascota
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title=settings.app_name,
-    version=settings.app_version,
-    description=settings.app_description,
-    lifespan=lifespan
+    title="API Clínica Veterinaria",
+    version="1.0.0",
+    description="API REST para gestión de clínica veterinaria"
 )
 
-@app.get('/', tags=['Home'])
-def home():
-    return {'message': 'API Clínica Veterinaria'}
+# Registramos ambos módulos en FastAPI
+app.include_router(mascota_router.router)
+app.include_router(propietario_router.router)  # 👈 NUEVO
 
-@app.get('/health-db', tags=['Health'])
-def db_check():
-    with engine.connect() as connection:
-        connection.execute(text('SELECT 1'))
-    return {'message': 'Conexión a BD OK'}
+
+@app.get("/", tags=["Home"])
+def home():
+    return {"message": "API Clínica Veterinaria"}
