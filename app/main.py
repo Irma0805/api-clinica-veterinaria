@@ -8,6 +8,7 @@ from app.routers import veterinario as veterinario_router
 from app.routers import cita as cita_router
 from app.routers import tratamiento as tratamiento_router
 from app.routers import citas_tratamientos as citas_tratamientos_router
+from app.routers import pago as pago_router
 
 from app.models.propietario import Propietario # noqa
 from app.models.mascota import Mascota # noqa
@@ -15,6 +16,7 @@ from app.models.veterinario import Veterinario # noqa
 from app.models.cita import Cita # noqa
 from app.models.tratamiento import Tratamiento # noqa
 from app.models.citas_tratamientos import CitasTratamientos  # noqa
+from app.models.pago import Pago  # noqa
 
 Base.metadata.create_all(bind=engine)
 
@@ -31,6 +33,7 @@ app.include_router(veterinario_router.router)
 app.include_router(cita_router.router)
 app.include_router(tratamiento_router.router)
 app.include_router(citas_tratamientos_router.router)
+app.include_router(pago_router.router)
 
 
 @app.get("/", tags=["Home"])
