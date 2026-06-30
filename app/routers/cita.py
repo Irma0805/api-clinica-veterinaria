@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from app.database.db_connection import get_db
 from app.schemas.cita import CitaCreate, CitaResponse
@@ -42,9 +43,17 @@ def actualizar(id: int, data: CitaCreate, db: Session = Depends(get_db)):
 
 @router.delete('/{id}', status_code=status.HTTP_204_NO_CONTENT)
 def eliminar(id: int, db: Session = Depends(get_db)):
-    cita = service.delete(db, id)
+    cita = service.get_by_id(db, id)
     if cita is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Cita con id {id} no encontrada"
+        )
+    try:
+        service.delete(db, id)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="No se puede eliminar la cita porque tiene tratamientos asociados."
         )

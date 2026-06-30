@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from app.database.db_connection import get_db
 from app.schemas.tratamiento import TratamientoCreate, TratamientoResponse
@@ -42,9 +43,17 @@ def actualizar(id: int, data: TratamientoCreate, db: Session = Depends(get_db)):
 
 @router.delete('/{id}', status_code=status.HTTP_204_NO_CONTENT)
 def eliminar(id: int, db: Session = Depends(get_db)):
-    tratamiento = service.delete(db, id)
+    tratamiento = service.get_by_id(db, id)
     if tratamiento is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Tratamiento con id {id} no encontrado"
+        )
+    try:
+        service.delete(db, id)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="No se puede eliminar el tratamiento porque tiene citas o pagos asociados."
         )
